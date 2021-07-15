@@ -4,7 +4,7 @@ import { z } from "zod"
 import { useFieldArray, useFormContext } from "react-hook-form"
 export { FORM_ERROR } from "app/core/components/Form"
 
-export function PollOptionsFieldArray() {
+export function PollOptionFieldArray() {
   const { control } = useFormContext()
   const { fields, insert } = useFieldArray({
     control,
@@ -49,7 +49,7 @@ export function PollForm<S extends z.ZodType<any, any>>(props: FormProps<S>) {
   return (
     <Form<S> {...props}>
       <LabeledTextField name="name" label="Name" placeholder="Name" />
-      <PollOptionsFieldArray />
+      <PollOptionFieldArray />
     </Form>
   )
 }

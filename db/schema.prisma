@@ -71,16 +71,16 @@ enum TokenType {
 }
 
 model Poll {
-  id          String        @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
   description String?
-  creator     User?         @relation(fields: [creatorId], references: [id])
+  creator     User?        @relation(fields: [creatorId], references: [id])
   creatorId   String?
-  options     PollOptions[]
+  options     PollOption[]
   votes       PollVote[]
 }
 
-model PollOptions {
+model PollOption {
   id     String     @id @default(cuid())
   option String
   poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
@@ -89,13 +89,13 @@ model PollOptions {
 }
 
 model PollVote {
-  id       String      @id @default(cuid())
-  poll     Poll        @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  id       String     @id @default(cuid())
+  poll     Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   pollId   String
-  option   PollOptions @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   optionId String
   ip       String?
   metadata Json
-  user     User?       @relation(fields: [userId], references: [id])
+  user     User?      @relation(fields: [userId], references: [id])
   userId   String?
 }
