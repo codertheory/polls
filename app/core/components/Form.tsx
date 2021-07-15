@@ -1,19 +1,20 @@
 import React, { createRef, PropsWithoutRef, ReactNode, useState } from "react"
-import { FormProvider, useForm, UseFormProps } from "react-hook-form"
+import { FormProvider, useForm, UseFormProps, UseFormReturn } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
-import { Button, ButtonGroup } from "@chakra-ui/react"
+import { Button, ButtonGroup, Flex } from "@chakra-ui/react"
 import { useErrorToast } from "../hooks/errorToast"
 import ReCAPTCHA from "react-google-recaptcha"
 
 export interface FormProps<S extends z.ZodType<any, any>>
-  extends Omit<PropsWithoutRef<JSX.IntrinsicElements["form"]>, "onSubmit"> {
+  extends Omit<PropsWithoutRef<JSX.IntrinsicElements["form"]>, "onSubmit" | "onReset"> {
   /** All your form fields */
   children?: ReactNode
   /** Text to display in the submit button */
   submitText?: string
   schema?: S
   onSubmit: (values: z.infer<S>) => Promise<void | OnSubmitResult>
+  onReset?: (formContext: UseFormReturn<z.infer<S>>) => void | Promise<void>
   requireCaptcha?: boolean
   initialValues?: UseFormProps<z.infer<S>>["defaultValues"]
 }
@@ -45,8 +46,8 @@ export function Form<S extends z.ZodType<any, any>>({
   })
   const [formError, setFormError] = useState<string | null>(null)
 
-  const reset = (event) => {
-    if (onReset) onReset(event)
+  const reset = async (event) => {
+    if (onReset) await onReset(ctx)
     ctx.reset()
     requireCaptcha ? recaptchaRef?.current?.reset() : null
   }
@@ -87,22 +88,27 @@ export function Form<S extends z.ZodType<any, any>>({
             {formError}
           </div>
         )}
-        <ButtonGroup variant="outline" spacing="6">
-          <Button colorScheme="grey" onClick={reset}>
-            Clear
-          </Button>
+        <Flex align={"center"} justify={"center"}>
+          <ButtonGroup mt={8} variant="outline" spacing="6">
+            {onReset && (
+              <Button colorScheme="grey" rounded={"full"} onClick={reset}>
+                Clear
+              </Button>
+            )}
 
-          {submitText && (
-            <Button
-              type="submit"
-              isLoading={ctx.formState.isSubmitting}
-              loadingText="Submitting"
-              colorScheme="teal"
-            >
-              {submitText}
-            </Button>
-          )}
-        </ButtonGroup>
+            {submitText && (
+              <Button
+                type="submit"
+                rounded={"full"}
+                isLoading={ctx.formState.isSubmitting}
+                loadingText="Submitting"
+                colorScheme="teal"
+              >
+                {submitText}
+              </Button>
+            )}
+          </ButtonGroup>
+        </Flex>
         {requireCaptcha ? (
           <ReCAPTCHA
             ref={recaptchaRef}

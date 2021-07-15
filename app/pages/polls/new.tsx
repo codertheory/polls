@@ -3,20 +3,18 @@ import Layout from "app/core/layouts/Layout"
 import createPoll from "app/polls/mutations/createPoll"
 import { FORM_ERROR, PollForm } from "app/polls/components/PollForm"
 import { CreatePoll } from "../../polls/validations"
+import { Card } from "../../core/components/Card"
 
 const NewPollPage: BlitzPage = () => {
   const router = useRouter()
   const [createPollMutation] = useMutation(createPoll)
 
   return (
-    <div>
+    <Card>
       <h1>Create New Poll</h1>
 
       <PollForm
         submitText="Create Poll"
-        // TODO use a zod schema for form validation
-        //  - Tip: extract mutation's schema into a shared `validations.ts` file and
-        //         then import and use it here
         schema={CreatePoll}
         initialValues={{
           options: [{}, {}, {}],
@@ -34,7 +32,7 @@ const NewPollPage: BlitzPage = () => {
         }}
         requireCaptcha
       />
-    </div>
+    </Card>
   )
 }
 

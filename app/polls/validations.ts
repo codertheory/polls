@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const createOption = z.object({
-  option: z.string().nonempty(),
+  option: z.string(),
 })
 
 export const CreatePoll = z.object({

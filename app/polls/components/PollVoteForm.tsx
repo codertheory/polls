@@ -1,8 +1,7 @@
 import Form, { FormProps } from "../../core/components/Form"
 import { z } from "zod"
-import { Box, HStack, Progress, RadioGroup, Text } from "@chakra-ui/react"
-import LabeledTextField from "../../core/components/LabeledTextField"
-import { useController } from "react-hook-form"
+import { Box, HStack, Progress, Text, useRadio, useRadioGroup, VStack } from "@chakra-ui/react"
+import { useController, useFormContext } from "react-hook-form"
 
 export type PollOption = {
   id: string
@@ -12,16 +11,81 @@ export type PollOption = {
   } | null
 }
 
-function PollVoteRadioGroup({ children }) {
-  const data = useController({
-    name: "option",
-    shouldUnregister: true,
-  })
+function PollVoteOption(props) {
+  const { getInputProps, getCheckboxProps } = useRadio(props)
+
+  const input = getInputProps()
+  const checkbox = getCheckboxProps()
 
   return (
-    <RadioGroup onChange={data.field.onChange} value={data.field.value}>
-      {children}
-    </RadioGroup>
+    <Box as="label">
+      <input {...input} />
+      <Box
+        {...checkbox}
+        w={"300px"}
+        cursor="pointer"
+        borderWidth="3px"
+        borderRadius="md"
+        boxShadow="md"
+        _checked={{
+          bg: "teal.600",
+          color: "white",
+          borderColor: "teal.600",
+        }}
+        _focus={{
+          boxShadow: "outline",
+        }}
+        px={5}
+        py={3}
+      >
+        {props.children}
+      </Box>
+    </Box>
+  )
+}
+
+function PollVoteRadioGroup({
+  options,
+  totalVotes,
+}: {
+  options: PollOption[]
+  totalVotes: number
+}) {
+  const { control } = useFormContext()
+  const data = useController({
+    name: "option",
+    control,
+  })
+
+  const { getRootProps, getRadioProps } = useRadioGroup({
+    name: "options",
+    value: data.field.value,
+    onChange: data.field.onChange,
+  })
+
+  const group = getRootProps()
+
+  return (
+    <VStack pt={6} {...group}>
+      {options.map((option, index) => {
+        const radio = getRadioProps({ value: option.id })
+        const votes = option._count!.votes
+        const calc = votes / totalVotes
+        const percentage = !isNaN(calc) ? calc : 0
+        return (
+          <PollVoteOption key={option.id} {...radio}>
+            <HStack>
+              <Text alignContent={"flex-start"}>{option.option}</Text>
+              <Text alignContent="flex-end">{votes} Votes</Text>
+            </HStack>
+            <HStack>
+              <Progress width="100%" value={percentage * 100} max={100} />
+              <Text>{(percentage * 100).toFixed(0)}%</Text>
+            </HStack>
+          </PollVoteOption>
+        )
+      })}
+    </VStack>
   )
 }
 
@@ -36,38 +100,7 @@ export function PollVoteForm<S extends z.ZodType<any, any>>({
 }) {
   return (
     <Form<S> {...props}>
-      <PollVoteRadioGroup>
-        {options.map((option, index) => {
-          const votes = option._count!.votes
-          const calc = votes / totalVotes
-          const percentage = !isNaN(calc) ? calc : 0
-          return (
-            <Box
-              key={index}
-              w="100%"
-              p={5}
-              shadow="md"
-              borderWidth="1px"
-              flex="1"
-              borderRadius="md"
-            >
-              <HStack width="100%">
-                <LabeledTextField
-                  name={"option"}
-                  type={"radio"}
-                  label={option.option}
-                  value={option.id}
-                />
-                <Text alignContent="flex-end">{votes} Votes</Text>
-              </HStack>
-              <HStack>
-                <Progress width="100%" value={percentage * 100} max={100} />
-                <Text>{(percentage * 100).toFixed(0)}%</Text>
-              </HStack>
-            </Box>
-          )
-        })}
-      </PollVoteRadioGroup>
+      <PollVoteRadioGroup options={options} totalVotes={totalVotes} />
     </Form>
   )
 }

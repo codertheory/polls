@@ -8,7 +8,7 @@ export default resolver.pipe(resolver.zod(CreatePoll), async (input) => {
     data: {
       name: input.name,
       options: {
-        create: input.options,
+        create: input.options.filter(({ option }) => option.length >= 1),
       },
     },
   })
